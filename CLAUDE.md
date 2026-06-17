@@ -139,6 +139,30 @@ Evan is an experienced Windows / Microsoft 365 admin (PowerShell, Entra ID, Exch
 
 ---
 
+## Build progress / state (notes-to-self — keep current)
+
+Scaffolding done so far (you built these, NOT backend):
+- `static/index.html` — single-file frontend mockup. Runs on hardcoded `FAKE_RESPONSE`
+  via `runMockSummarize()` (1.1s fake delay → spinner → summary). The REAL `fetch()`
+  to `POST /summarize` is written but commented out at bottom of `<script>` as
+  `realSummarize(url)`. Step-10 swap = call `realSummarize` from submit handler instead
+  of `runMockSummarize`. States implemented: loading / summary / error (`showError`).
+- `requirements.txt` — Flask, requests, python-dotenv, anthropic. Each annotated with why.
+  Unpinned (beginner-friendly). anthropic SDK optional vs raw requests — left to Evan.
+- `.env.example` — filled with placeholders `SUPADATA_API_KEY`, `ANTHROPIC_API_KEY` +
+  copy-to-`.env` instructions. `.gitignore` already covers `.env` + venv.
+- `README.md` / `.gitignore` were already solid; left mostly as-is.
+
+Data contract locked (frontend already speaks it):
+- `POST /summarize`, JSON body `{ "url": "..." }`
+- success 200 → `{ "summary": "..." }` ; failure 4xx/5xx → `{ "error": "..." }`
+
+NOT created, by design (Evan's to write): `app.py`. Do not create it.
+
+Where Evan is in the build order: handed off at step 4 (write minimal Flask app +
+one hardcoded route). Setup steps (venv/install/.env) given. Next stuck-point help =
+explain Flask routing anchored to Express, climb the hint ladder.
+
 ## TL;DR for Claude Code
 
 Build the frontend, the scaffolding, the config, and the data contract. Then **put the keyboard down for the backend.** Explain, decompose, hint up the ladder, review what he writes — but the backend code comes out of Evan's hands, not yours. Hold that line unless he explicitly overrides it.

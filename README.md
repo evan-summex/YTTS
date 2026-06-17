@@ -37,6 +37,8 @@ The hard problem in any "summarize a YouTube video" app — actually *getting* t
 4. It sends that transcript to the Anthropic API (Claude) to produce a summary.
 5. It returns the summary, which the frontend displays.
 
+**API contract** between frontend and backend: the frontend sends `POST /summarize` with a JSON body `{ "url": "..." }`. The backend responds with `{ "summary": "..." }` on success (HTTP 200), or `{ "error": "..." }` with an appropriate error status on failure.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -96,7 +98,7 @@ Copy `.env.example` to `.env` and fill in your own values. **The `.env` file is 
 ## Project Structure
 
 ```
-youtube-video-summarizer/
+YTTS/
 ├── app.py              # Flask backend (the hand-written learning core)
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Template for required environment variables
@@ -126,7 +128,11 @@ This repo includes a `CLAUDE.md` configured to make [Claude Code](https://www.an
 
 ## Status & Roadmap
 
-🚧 **Learning in progress.** This is a personal learning build, not a polished product. There's no urgency to ship — the existing tool it's modeled on already works. Possible future additions:
+🚧 **Learning in progress.** This is a personal learning build, not a polished product. There's no urgency to ship — the existing tool it's modeled on already works.
+
+**Current state:** The frontend mockup, project scaffolding (`requirements.txt`, `.env.example`), and the API data contract are in place. The frontend currently runs in **mockup mode** — it displays hardcoded sample output so the finished look and feel is visible, and is not yet wired to a live backend. The Flask backend (`app.py`) is the next piece, hand-written as the core learning exercise.
+
+Possible future additions:
 
 - [ ] Error handling for missing transcripts, invalid URLs, and API failures
 - [ ] Selectable summary length / style

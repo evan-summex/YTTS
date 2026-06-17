@@ -1,0 +1,24 @@
+# YTT Summarizer — Python dependencies
+# Install everything here with:  pip install -r requirements.txt
+
+# --- Web framework -----------------------------------------------------------
+# Flask is the backend. It does the job Express did for you in Node:
+# defines routes, parses the incoming request, and sends a response.
+Flask
+
+# --- Outbound HTTP -----------------------------------------------------------
+# `requests` makes HTTP calls *out* from your backend to other servers.
+# This is your PowerShell `Invoke-RestMethod`. You'll use it to call Supadata.
+requests
+
+# --- Config / secrets --------------------------------------------------------
+# python-dotenv reads your .env file and loads those values into the
+# environment so your code can read os.environ["SUPADATA_API_KEY"] etc.
+# Keeps the secret keys OUT of your source code.
+python-dotenv
+
+# --- Anthropic (Claude) SDK --------------------------------------------------
+# Official client for the summary call. It's a thin convenience wrapper around
+# the same HTTP API — you *could* hit it with plain `requests` instead, but the
+# SDK handles auth headers and response parsing for you. Your call which to use.
+anthropic

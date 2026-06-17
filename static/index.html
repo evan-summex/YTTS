@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YTT Summarizer</title>
+  <style>
+    :root {
+      --bg:        #0f1117;
+      --panel:     #181b24;
+      --panel-2:   #1f232f;
+      --border:    #2a2f3d;
+      --text:      #e6e8ee;
+      --muted:     #9aa3b2;
+      --accent:    #ef4444;   /* YouTube-ish red */
+      --accent-2:  #f87171;
+      --ok:        #34d399;
+      --radius:    14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a1d28 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+    }
+
+    header { text-align: center; margin-bottom: 32px; }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .logo .play {
+      display: inline-grid;
+      place-items: center;
+      width: 40px; height: 28px;
+      background: var(--accent);
+      border-radius: 7px;
+      color: white;
+    }
+    .logo .play::after {
+      content: "";
+      width: 0; height: 0;
+      border-left: 11px solid white;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      margin-left: 3px;
+    }
+    .tagline { color: var(--muted); margin-top: 10px; font-size: 15px; }
+
+    main { width: 100%; max-width: 720px; }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    }
+
+    form { display: flex; gap: 10px; }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.18);
+    }
+    input::placeholder { color: #6b7280; }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0 22px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .05s;
+      white-space: nowrap;
+    }
+    button:hover { background: var(--accent-2); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    .hint { color: var(--muted); font-size: 13px; margin-top: 12px; }
+
+    /* --- result + states --------------------------------------------------- */
+    .result {
+      margin-top: 22px;
+      display: none;            /* toggled by JS */
+    }
+    .result.show { display: block; }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .summary-box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+    .summary-box h2 {
+      margin: 0 0 6px;
+      font-size: 17px;
+    }
+    .video-meta { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .summary-box p { line-height: 1.65; margin: 0 0 14px; }
+    .summary-box ul { line-height: 1.65; margin: 0 0 4px; padding-left: 20px; }
+    .summary-box li { margin-bottom: 6px; }
+
+    .error-box {
+      background: rgba(239,68,68,0.10);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: var(--accent-2);
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--ok);
+      border: 1px solid rgba(52,211,153,0.4);
+      background: rgba(52,211,153,0.08);
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .mock-note {
+      max-width: 720px;
+      margin: 28px auto 0;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .mock-note code { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><span class="play"></span> YTT Summarizer</div>
+    <div class="tagline">Paste a YouTube link, get an AI summary of the video.</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <form id="summarize-form">
+        <input
+          type="text"
+          id="url-input"
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+        />
+        <button type="submit" id="submit-btn">Summarize</button>
+      </form>
+      <div class="hint">Tip: only YouTube links are accepted.</div>
+
+      <!-- Result region. JS swaps between loading / summary / error. -->
+      <section class="result" id="result" aria-live="polite"></section>
+    </div>
+
+    <p class="mock-note">
+      ⚠️ <strong>Mockup mode.</strong> This page currently shows <em>hardcoded</em> sample
+      output so you can see the finished look &amp; feel. It is not yet wired to a real
+      backend. The real <code>fetch()</code> call to <code>POST /summarize</code> is written
+      out (and commented) at the bottom of this file's &lt;script&gt; — swap it in once your
+      Flask backend is running.
+    </p>
+  </main>
+
+  <script>
+    "use strict";
+
+    // ----------------------------------------------------------------------
+    //  FAKE DATA  — stands in for what the real backend will eventually return.
+    //  The real backend returns JSON shaped like:  { "summary": "..." }
+    //  (See the data contract in README / CLAUDE notes.)
+    // ----------------------------------------------------------------------
+    const FAKE_RESPONSE = {
+      summary: [
+        "This video walks through how to structure a small backend service from scratch,",
+        "focusing on keeping responsibilities cleanly separated.",
+        "",
+        "Key points:",
+        "<ul>",
+        "<li>An incoming request is just data — your job is to read it, validate it, and respond.</li>",
+        "<li>Secrets like API keys should live in the environment, never in source code.</li>",
+        "<li>Outbound API calls (transcript fetch, summarization) are independent steps you can test one at a time.</li>",
+        "<li>Always reject bad input early before doing expensive work.</li>",
+        "</ul>",
+        "The presenter closes by reminding viewers that small, well-scoped projects are the",
+        "fastest way to internalize backend fundamentals."
+      ].join(" ")
+    };
+
+    const FAKE_VIDEO_TITLE = "Building a Tiny Backend the Right Way";
+    const FAKE_VIDEO_META  = "youtube.com • 12:41 • ~8 min read";
+
+    const form    = document.getElementById("summarize-form");
+    const input   = document.getElementById("url-input");
+    const btn      = document.getElementById("submit-btn");
+    const result  = document.getElementById("result");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const url = input.value.trim();
+
+      // Pre-fill a sample link if the box is empty, so the demo always works.
+      if (!url) {
+        input.value = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+      }
+
+      runMockSummarize();
+    });
+
+    function runMockSummarize() {
+      // 1) Loading state
+      showLoading();
+      btn.disabled = true;
+
+      // 2) Pretend the backend took a moment, then show the fake summary.
+      setTimeout(function () {
+        showSummary(FAKE_RESPONSE.summary);
+        btn.disabled = false;
+      }, 1100);
+    }
+
+    function showLoading() {
+      result.className = "result show";
+      result.innerHTML =
+        '<div class="status"><span class="spinner"></span> Fetching transcript and summarizing…</div>';
+    }
+
+    function showSummary(summaryHtml) {
+      result.className = "result show";
+      result.innerHTML =
+        '<div class="status">Done <span class="badge">sample</span></div>' +
+        '<div class="summary-box">' +
+          '<h2>' + FAKE_VIDEO_TITLE + '</h2>' +
+          '<div class="video-meta">' + FAKE_VIDEO_META + '</div>' +
+          '<p>' + summaryHtml + '</p>' +
+        '</div>';
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    function showError(message) {
+      result.className = "result show";
+      result.innerHTML = '<div class="error-box">' + message + '</div>';
+    }
+
+    // ======================================================================
+    //  REAL BACKEND CALL  — leave this commented until your Flask backend
+    //  exists. When you're ready (build-order step 10), delete runMockSummarize
+    //  above and call realSummarize(url) from the submit handler instead.
+    //
+    //  This is the exact shape of the data contract your backend must honor:
+    //
+    //    REQUEST:   POST /summarize
+    //               Content-Type: application/json
+    //               body  ->  { "url": "https://www.youtube.com/watch?v=..." }
+    //
+    //    RESPONSE (success, HTTP 200):   { "summary": "..." }
+    //    RESPONSE (failure, HTTP 4xx/5xx): { "error": "human-readable message" }
+    // ======================================================================
+    /*
+    async function realSummarize(url) {
+      showLoading();
+      btn.disabled = true;
+      try {
+        const res = await fetch("/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Backend signaled a problem and (per the contract) sent { "error": ... }
+          showError(data.error || "Something went wrong.");
+          return;
+        }
+
+        showSummary(data.summary);
+      } catch (err) {
+        showError("Could not reach the server. Is the backend running?");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    */
+  </script>
+</body>
+</html>
