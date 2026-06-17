@@ -141,7 +141,7 @@ Possible future additions:
 
 ## License
 
-No license specified yet. If you intend others to reuse this, consider adding one — [MIT](https://choosealicense.com/licenses/mit/) is a common, permissive choice for projects like this. Until a license is added, default copyright applies.
+AGPL
 
 ## Acknowledgments
 
