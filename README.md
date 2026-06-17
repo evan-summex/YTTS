@@ -141,7 +141,11 @@ Possible future additions:
 
 ## License
 
-AGPL
+This project is licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0), 19 November 2007.
+
+The AGPL-3.0 is a strong copyleft license. In short: you're free to use, study, modify, and redistribute this software, but any derivative work must also be released under the AGPL-3.0 — and crucially, if you run a modified version as a network service, you must make the corresponding source available to its users. See the full text at <https://www.gnu.org/licenses/agpl-3.0.html>.
+
+A complete copy of the license should accompany this repository in a `LICENSE` file.
 
 ## Acknowledgments
 
