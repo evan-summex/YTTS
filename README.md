@@ -64,9 +64,9 @@ The hard problem in any "summarize a YouTube video" app — actually *getting* t
 ## Getting Started
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/youtube-video-summarizer.git
-cd youtube-video-summarizer
+# 1. Clone the repo (using SSH)
+git clone git@github.com:evan-summex/YTTS.git
+cd YTTS
 
 # 2. Create and activate a virtual environment
 python -m venv venv
