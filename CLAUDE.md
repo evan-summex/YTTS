@@ -62,8 +62,8 @@ Do these fully and well. Don't make him learn these right now — they'd balloon
    - What exact JSON does the frontend **send**? (e.g. `{ "url": "..." }`)
    - What exact JSON does the frontend **expect back**? (e.g. `{ "summary": "..." }` on success, `{ "error": "..." }` on failure)
    - **He builds the backend to this contract.** He should never have to reverse-engineer your frontend.
-3. **Project scaffolding & config.** Folder structure, `requirements.txt`, `.gitignore`, a `.env.example` (with placeholder keys, never real ones), and a README skeleton. Set up the environment so `flask run` works once his code exists.
-4. **Dependency guidance.** Tell him what to `pip install` (Flask, `requests`, `python-dotenv`, etc.) and *why each one is there*.
+3. **Project scaffolding & config.** Folder structure, `requirements.txt`, `.gitignore`, a `.env.example` (with placeholder keys, never real ones), and a README skeleton. Set up the environment so `uvicorn app:app --reload` works once his code exists.
+4. **Dependency guidance.** Tell him what to `pip install` (FastAPI, `uvicorn`, `requests`, `python-dotenv`, etc.) and *why each one is there*.
 5. **Reviewing his backend after he writes it.** Once he's written a piece, review it like a mentor: point out what's right first, then surgically flag issues. (See "How to explain to Evan" below.)
 6. **Concept explanations on demand.** Any "how does X work" question gets a real explanation — that's encouraged, that's the point.
 
@@ -79,7 +79,7 @@ A small web app: paste a YouTube link → hit search → get an AI summary of th
 [ Frontend (you build, fake data first) ]
         │  POST /summarize  { "url": "..." }
         ▼
-[ Flask backend — EVAN BUILDS THIS BY HAND ]
+[ FastAPI backend — EVAN BUILDS THIS BY HAND ]
    1. Receive the URL from the request
    2. Validate it's a real YouTube link  (guardrail)
    3. Call Supadata API  → get transcript text back
@@ -91,7 +91,7 @@ A small web app: paste a YouTube link → hit search → get an AI summary of th
 
 ### Stack
 
-- **Backend:** Python + **Flask** (chosen for simplicity; closest in spirit to the Express he already knows).
+- **Backend:** Python + **FastAPI** (decorator-based routing that maps cleanly onto the Express he already knows; gives him typed request/response models and built-in validation as he grows).
 - **Transcripts:** **Supadata** API. This is the whole reason the project is approachable — Supadata does the YouTube transcript fetching, so that adversarial problem is *off the table*. To Evan's backend it's just an outbound HTTP call.
 - **Summarization:** **Anthropic API** (Claude). He's already done this shape in Node for YTT, so it's familiar ground in a new language.
 - **Frontend:** single-file HTML/CSS/JS, served however is simplest.
@@ -100,7 +100,7 @@ A small web app: paste a YouTube link → hit search → get an AI summary of th
 
 - **YouTube-only guardrail.** Reject any URL that isn't a YouTube link before doing anything else. This is one of his first backend exercises.
 - **Secrets stay server-side.** Both the Supadata key and the Anthropic key live **only** in the backend, loaded from environment variables — never in the frontend, never committed to git. Your `.env.example` uses placeholders. (He thinks this way already as a sysadmin; reinforce it.)
-- **CORS / serving.** If the standalone frontend and the Flask server are different origins, the browser will block the request and the error won't obviously say why. This is a *great* learning moment — let him hit it, then guide him through the two options (let Flask serve the HTML so they're same-origin, or add CORS handling). Explain the tradeoff; let him choose and implement.
+- **CORS / serving.** If the standalone frontend and the FastAPI server are different origins, the browser will block the request and the error won't obviously say why. This is a *great* learning moment — let him hit it, then guide him through the two options (let FastAPI serve the HTML so they're same-origin, or add CORS handling via `CORSMiddleware`). Explain the tradeoff; let him choose and implement.
 
 ---
 
@@ -111,7 +111,7 @@ Walk him through this sequence. Don't dump it all at once — one stage at a tim
 1. **You** build the frontend mockup with fake data. He looks at it, sees the goal.
 2. **You** state the data contract explicitly. He writes it down.
 3. **You** scaffold the project (folders, `requirements.txt`, `.env.example`, run instructions).
-4. **Evan** writes a Flask app that starts and responds to a single hardcoded route — just to feel routing work. (Guide, don't write.)
+4. **Evan** writes a FastAPI app that starts and responds to a single hardcoded route — just to feel routing work. (Guide, don't write.)
 5. **Evan** writes the YouTube URL validator. (Guardrail.)
 6. **Evan** wires the route to read the incoming JSON and run the validator.
 7. **Evan** adds the Supadata call (outbound HTTP, reading a secret from env).
@@ -130,7 +130,7 @@ Evan is an experienced Windows / Microsoft 365 admin (PowerShell, Entra ID, Exch
 
 - **Hunt the hidden assumption first.** When he says "I keep going back and forth and still don't get it," the problem is almost never missing info — it's a wrong assumption, usually imported from Windows/PowerShell. Ask yourself what he'd have to believe for his question to make sense, then name and correct that belief directly. One sentence of assumption-naming beats three paragraphs of correct-but-additive explanation.
 - **He verifies by restating.** He'll paraphrase back ("So basically if I do X, then Y?"). His restatements are usually ~80% right with one wrong clause. Confirm what's right first, then correct *only* the wrong clause. Do **not** re-explain the whole topic — that's what makes things feel circular and makes him doubt parts he already had right.
-- **Anchor to PowerShell and Express.** His PowerShell intuition is strong — borrow it. (`$env:PATH` vs local var; `Invoke-RestMethod` is the mental model for an outbound HTTP call; Express routes ≈ Flask routes.) Frame Windows-vs-Linux/Python differences as *design philosophy*, not trivia.
+- **Anchor to PowerShell and Express.** His PowerShell intuition is strong — borrow it. (`$env:PATH` vs local var; `Invoke-RestMethod` is the mental model for an outbound HTTP call; Express routes ≈ FastAPI routes.) Frame Windows-vs-Linux/Python differences as *design philosophy*, not trivia.
 - **Split conflated concepts into named jobs.** When several mechanisms are blurred into one fuzzy "thing that makes it work," give each a one-line job and show they're independent. End multi-concept explanations with a compact piece→job summary.
 - **Decompose syntax token by token.** When he asks about a line of code or a command, annotate it part by part with comments. Never gloss over a token he hasn't decoded yet.
 - **Answer "why not the alternative?"** He probes designs by proposing alternatives. Treat these as legitimate engineering questions: confirm whether the alternative works, explain the real tradeoff, present valid options rather than one blessed path.
@@ -147,7 +147,7 @@ Scaffolding done so far (you built these, NOT backend):
   to `POST /summarize` is written but commented out at bottom of `<script>` as
   `realSummarize(url)`. Step-10 swap = call `realSummarize` from submit handler instead
   of `runMockSummarize`. States implemented: loading / summary / error (`showError`).
-- `requirements.txt` — Flask, requests, python-dotenv, anthropic. Each annotated with why.
+- `requirements.txt` — FastAPI, uvicorn, requests, python-dotenv, anthropic. Each annotated with why.
   Unpinned (beginner-friendly). anthropic SDK optional vs raw requests — left to Evan.
 - `.env.example` — filled with placeholders `SUPADATA_API_KEY`, `ANTHROPIC_API_KEY` +
   copy-to-`.env` instructions. `.gitignore` already covers `.env` + venv.
@@ -159,9 +159,9 @@ Data contract locked (frontend already speaks it):
 
 NOT created, by design (Evan's to write): `app.py`. Do not create it.
 
-Where Evan is in the build order: handed off at step 4 (write minimal Flask app +
+Where Evan is in the build order: handed off at step 4 (write minimal FastAPI app +
 one hardcoded route). Setup steps (venv/install/.env) given. Next stuck-point help =
-explain Flask routing anchored to Express, climb the hint ladder.
+explain FastAPI routing anchored to Express, climb the hint ladder.
 
 ## TL;DR for Claude Code
 

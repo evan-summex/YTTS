@@ -8,7 +8,7 @@
 
 This is a lightweight web app: you paste a YouTube URL, hit **Summarize**, and the backend fetches the video's transcript and returns an AI-written summary.
 
-It's intentionally small. The point isn't novelty — it's a **learning project focused specifically on backend development**. The backend (a Flask API) is written by hand as a learning exercise; the frontend and project scaffolding were generated with AI assistance so the effort stays concentrated on the backend skill being practiced. If you're browsing this repo, that context explains why the structure is deliberately minimal and why there's a `CLAUDE.md` with unusual tutoring constraints (more on that below).
+It's intentionally small. The point isn't novelty — it's a **learning project focused specifically on backend development**. The backend (a FastAPI app) is written by hand as a learning exercise; the frontend and project scaffolding were generated with AI assistance so the effort stays concentrated on the backend skill being practiced. If you're browsing this repo, that context explains why the structure is deliberately minimal and why there's a `CLAUDE.md` with unusual tutoring constraints (more on that below).
 
 The hard problem in any "summarize a YouTube video" app — actually *getting* the transcript past YouTube's anti-scraping defenses — is handed off to a third-party API ([Supadata](https://supadata.ai/)), which keeps the backend approachable.
 
@@ -22,7 +22,7 @@ The hard problem in any "summarize a YouTube video" app — actually *getting* t
                │  POST /summarize  { "url": "..." }
                ▼
 ┌─────────────────────────────┐
-│  Flask backend              │
+│  FastAPI backend            │
 │  1. Receive the URL         │
 │  2. Validate it's YouTube   │  ← guardrail: non-YouTube links rejected
 │  3. Supadata → transcript   │  ← outbound API call
@@ -43,7 +43,8 @@ The hard problem in any "summarize a YouTube video" app — actually *getting* t
 
 | Layer | Technology |
 |---|---|
-| Backend | Python + [Flask](https://flask.palletsprojects.com/) |
+| Backend | Python + [FastAPI](https://fastapi.tiangolo.com/) |
+| ASGI server | [`uvicorn`](https://www.uvicorn.org/) |
 | HTTP requests | [`requests`](https://requests.readthedocs.io/) |
 | Config / secrets | [`python-dotenv`](https://pypi.org/project/python-dotenv/) |
 | Transcripts | [Supadata YouTube Transcript API](https://supadata.ai/) |
@@ -81,10 +82,10 @@ pip install -r requirements.txt
 cp .env.example .env            # then edit .env and add your keys
 
 # 5. Run the app
-flask run
+uvicorn app:app --reload
 ```
 
-Then open the app in your browser (default `http://127.0.0.1:5000`).
+Then open the app in your browser (default `http://127.0.0.1:8000`).
 
 ## Environment Variables
 
@@ -99,7 +100,7 @@ Copy `.env.example` to `.env` and fill in your own values. **The `.env` file is 
 
 ```
 YTTS/
-├── app.py              # Flask backend (the hand-written learning core)
+├── app.py              # FastAPI backend (the hand-written learning core)
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Template for required environment variables
 ├── .env                # Your real keys — git-ignored, never committed
@@ -130,7 +131,7 @@ This repo includes a `CLAUDE.md` configured to make [Claude Code](https://www.an
 
 🚧 **Learning in progress.** This is a personal learning build, not a polished product. There's no urgency to ship — the existing tool it's modeled on already works.
 
-**Current state:** The frontend mockup, project scaffolding (`requirements.txt`, `.env.example`), and the API data contract are in place. The frontend currently runs in **mockup mode** — it displays hardcoded sample output so the finished look and feel is visible, and is not yet wired to a live backend. The Flask backend (`app.py`) is the next piece, hand-written as the core learning exercise.
+**Current state:** The frontend mockup, project scaffolding (`requirements.txt`, `.env.example`), and the API data contract are in place. The frontend currently runs in **mockup mode** — it displays hardcoded sample output so the finished look and feel is visible, and is not yet wired to a live backend. The FastAPI backend (`app.py`) is the next piece, hand-written as the core learning exercise.
 
 Possible future additions:
 

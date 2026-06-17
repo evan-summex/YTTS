@@ -2,9 +2,14 @@
 # Install everything here with:  pip install -r requirements.txt
 
 # --- Web framework -----------------------------------------------------------
-# Flask is the backend. It does the job Express did for you in Node:
+# FastAPI is the backend. It does the job Express did for you in Node:
 # defines routes, parses the incoming request, and sends a response.
-Flask
+fastapi
+
+# --- ASGI server -------------------------------------------------------------
+# FastAPI doesn't run itself — uvicorn is the server that actually listens for
+# requests and hands them to your app. Run it with:  uvicorn app:app --reload
+uvicorn
 
 # --- Outbound HTTP -----------------------------------------------------------
 # `requests` makes HTTP calls *out* from your backend to other servers.
