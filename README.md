@@ -87,6 +87,39 @@ uvicorn app:app --reload
 
 Then open the app in your browser (default `http://127.0.0.1:8000`).
 
+### Troubleshooting (WSL2)
+
+**`pip install` hangs on "Collecting" / downloading a package.** On WSL2, `pip` can
+reach the PyPI index (`pypi.org`) but stall when downloading the actual files from
+`files.pythonhosted.org`. This is usually an IPv6 issue — WSL2 tries IPv6, the connection
+stalls, and it never falls back to IPv4. Quick diagnosis:
+
+```bash
+curl    https://files.pythonhosted.org/   # hangs?
+curl -4 https://files.pythonhosted.org/   # works? → IPv6 is the culprit
+```
+
+Fix it for the current session:
+
+```bash
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+```
+
+To make it survive a WSL restart, add the setting to `/etc/sysctl.conf` and have WSL
+apply it on boot via `/etc/wsl.conf`:
+
+```ini
+# /etc/sysctl.conf
+net.ipv6.conf.all.disable_ipv6=1
+
+# /etc/wsl.conf  (add under the existing [boot] section)
+[boot]
+command = sysctl -p
+```
+
+Then `wsl --shutdown` (from Windows PowerShell) and reopen. Verify with
+`cat /proc/sys/net/ipv6/conf/all/disable_ipv6` — `1` means IPv6 is disabled.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and fill in your own values. **The `.env` file is git-ignored and must never be committed.**

@@ -159,9 +159,25 @@ Data contract locked (frontend already speaks it):
 
 NOT created, by design (Evan's to write): `app.py`. Do not create it.
 
-Where Evan is in the build order: handed off at step 4 (write minimal FastAPI app +
-one hardcoded route). Setup steps (venv/install/.env) given. Next stuck-point help =
-explain FastAPI routing anchored to Express, climb the hint ladder.
+Environment is now live (set up this session):
+- venv created + activated. Covered what `activate` does (prepends `venv/bin` to PATH;
+  `python` symlink exists only inside venv — Ubuntu ships `python3` only). Exit = `deactivate`.
+- Dependencies installed successfully via `pip install -r requirements.txt`.
+- WSL2 networking gotcha hit + fixed: `pip` hung on `files.pythonhosted.org` because WSL2
+  was trying IPv6 and never falling back to IPv4 (pypi.org index host worked, file host didn't).
+  Diagnosed by isolating `curl https://files.pythonhosted.org/` (hung) vs `curl -4 ...` (worked).
+  MTU change was tried first and reverted (not the cause). Fix = disable IPv6:
+  `sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1`. Made permanent via `net.ipv6.conf.all.disable_ipv6=1`
+  in `/etc/sysctl.conf` + `command = sysctl -p` under existing `[boot]` in `/etc/wsl.conf`
+  (had to merge a duplicate `[boot]` section). Verify state: `cat /proc/sys/net/ipv6/conf/all/disable_ipv6` (1=off).
+- `uvicorn app:app --reload` confirmed reachable — fails only with "Could not import module app"
+  because `app.py` doesn't exist yet. Plumbing proven.
+
+Where Evan is in the build order: actively on step 4 (write minimal FastAPI app +
+one hardcoded route). He's just asked where/how to start; given him the "smallest runnable
+thing" framing (import FastAPI → create app instance → one route) + Express decorator anchor.
+He's about to create `app.py` himself. Next stuck-point help = climb the hint ladder on
+FastAPI routing; do NOT write the route for him.
 
 ## TL;DR for Claude Code
 
