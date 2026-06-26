@@ -135,6 +135,7 @@ Evan is an experienced Windows / Microsoft 365 admin (PowerShell, Entra ID, Exch
 - **Decompose syntax token by token.** When he asks about a line of code or a command, annotate it part by part with comments. Never gloss over a token he hasn't decoded yet.
 - **Answer "why not the alternative?"** He probes designs by proposing alternatives. Treat these as legitimate engineering questions: confirm whether the alternative works, explain the real tradeoff, present valid options rather than one blessed path.
 - **Use lifecycle narratives for invisible processes.** For anything behind the scenes (a request arriving, env vars loading, the call chain firing), give a numbered timeline of what actually happens in order. He builds durable models from sequences.
+- **Match depth to the task — flag rabbit holes.** His "understand before I use it" instinct can pull him into framework internals or hard CS (closures, decorator desugaring) far below what the work needs, until he burns out and loses the thread. When the "why" recurses 2+ levels below the task, or he treats *understanding the internals* as a prerequisite for *using* the tool, stop going deeper and zoom out: (1) name that he's below the level the task requires ("you're the driver, not the engine-builder" — he uses `Invoke-RestMethod`/`[CmdletBinding()]` without their internals and that's fine); (2) give a **doable** exit criterion ("you're done once you can *write* X"), not a felt-understanding one; (3) separate **understanding** (he can do the mechanical rewrite — he's there) from **fluency** (the "obvious" feeling), and tell him fluency comes from repetition and building it himself, never from one more explanation. Frame it warmly — the deep version is available later and often clicks for free once he's used the machinery.
 - **Pacing:** one major concept or correction per response; resolve it before the next layer. Wait for his restatement as the signal he's ready to move on. A single memorable closing line that compresses the model helps it stick. Keep the tone warm and direct — "good catch" / "you've spotted the gap" when his question reveals real insight.
 
 ---
@@ -173,11 +174,20 @@ Environment is now live (set up this session):
 - `uvicorn app:app --reload` confirmed reachable — fails only with "Could not import module app"
   because `app.py` doesn't exist yet. Plumbing proven.
 
-Where Evan is in the build order: actively on step 4 (write minimal FastAPI app +
-one hardcoded route). He's just asked where/how to start; given him the "smallest runnable
-thing" framing (import FastAPI → create app instance → one route) + Express decorator anchor.
-He's about to create `app.py` himself. Next stuck-point help = climb the hint ladder on
-FastAPI routing; do NOT write the route for him.
+Where Evan is in the build order: finishing step 4 conceptually — he just worked all the way
+through the `@app.get("/")` decorator syntax and is ready to actually write `app.py` with his
+first route. This took a long, deep session (~16 turns): he went well past use-level into the
+internals (functions-returning-functions, closures, frames in Python Tutor, return-vs-print,
+scope, and finally the uvicorn-is-the-executor runtime model). What finally landed it was
+zooming OUT — separating "use the tool" (driver) from "how it's built" (engine), the
+understanding-vs-fluency distinction, and the lifecycle showing uvicorn (not the file) calls
+`root()` at request time. Lesson logged: watch for him over-drilling internals that aren't
+relevant to the work and surface the relevance check early (see new "Match depth to the task"
+bullet above; mirrored in the explaining-concepts-to-evan skill). He now reads
+`@app.get("/path")` as "wire this function to this URL+method" and can write a new route by
+copying the shape (verified — he did the non-decorator rewrite himself for `/testpage` and a
+renamed handler). Next stuck-point help = climb the hint ladder on FastAPI routing; do NOT
+write the route for him.
 
 ## TL;DR for Claude Code
 
